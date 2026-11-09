@@ -1,8 +1,11 @@
 package com.smarthome.device.controller;
 
 import com.smarthome.common.result.Result;
+import com.smarthome.device.dto.DeviceRemoteCommandRequest;
 import com.smarthome.device.dto.DeviceRequest;
+import com.smarthome.device.service.DeviceCommandService;
 import com.smarthome.device.service.DeviceService;
+import com.smarthome.device.vo.DeviceCommandVO;
 import com.smarthome.device.vo.DeviceVO;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,9 +27,11 @@ import java.util.List;
 public class DeviceController {
 
     private final DeviceService deviceService;
+    private final DeviceCommandService deviceCommandService;
 
-    public DeviceController(DeviceService deviceService) {
+    public DeviceController(DeviceService deviceService, DeviceCommandService deviceCommandService) {
         this.deviceService = deviceService;
+        this.deviceCommandService = deviceCommandService;
     }
 
     @GetMapping
@@ -58,5 +63,11 @@ public class DeviceController {
     @PostMapping("/{deviceCode}/heartbeat")
     public Result<DeviceVO> heartbeat(@PathVariable("deviceCode") String deviceCode) {
         return Result.success("心跳成功", deviceService.heartbeat(deviceCode));
+    }
+
+    @PostMapping("/{id}/commands")
+    public Result<DeviceCommandVO> createCommand(@PathVariable("id") Long id,
+                                                 @Valid @RequestBody DeviceRemoteCommandRequest request) {
+        return Result.success("指令创建成功", deviceCommandService.createRemoteCommand(id, request));
     }
 }

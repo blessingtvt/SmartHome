@@ -3,22 +3,21 @@ package com.smarthome.device.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * 设备控制指令创建请求（归属 S3）。
+ * 内部指令创建请求（归属 S3，INT02）。
  *
- * <p>外部接口 POST /api/v1/devices/{deviceId}/commands 由路径 deviceId 解析目标设备，
- * 此处的 deviceCode 可空；内部接口 POST /internal/device-commands 由 S2 以
- * device_code 指定目标设备，此时 deviceCode 必填（在 Service 层校验）。</p>
+ * <p>供 S2 规则服务调用：通过 device_code 定位目标设备，source 仅允许 AUTO_RULE。</p>
  */
 public class DeviceCommandCreateRequest {
 
-    /** 目标设备编码（内部接口使用；外部接口由 deviceId 解析，可空） */
+    /** 目标设备编码（必填） */
+    @NotBlank(message = "设备编码不能为空")
     private String deviceCode;
 
-    /** 控制动作（TURN_ON/TURN_OFF/SET_LEVEL） */
+    /** 控制动作（TURN_ON/TURN_OFF） */
     @NotBlank(message = "控制动作不能为空")
     private String action;
 
-    /** 控制来源（RULE/REMOTE） */
+    /** 控制来源（INT02 仅允许 AUTO_RULE） */
     @NotBlank(message = "控制来源不能为空")
     private String source;
 
