@@ -14,11 +14,30 @@
     <name>gateway-service</name>
     <description>G0 网关服务（阶段6接入 Spring Cloud Gateway + Nacos，当前仅占位）</description>
 
-    <!-- 阶段6 再引入：
-         - org.springframework.cloud:spring-cloud-starter-gateway
-         - com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery
-         注意：Gateway 基于 WebFlux，不要引入 spring-boot-starter-web（会冲突）。 -->
     <dependencies>
-        <!-- 占位阶段暂无依赖 -->
+        <!-- 阶段6：API 网关（基于 WebFlux）。注意不要引入 spring-boot-starter-web（webmvc），否则启动冲突 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+        <!-- 服务发现客户端：解析 lb://service-name 路由到 S1~S4 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <!-- lb:// 服务名路由所需的客户端负载均衡 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -4,6 +4,12 @@ server:
 spring:
   application:
     name: device-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        # 单机本地联调：强制注册 127.0.0.1，避免 Windows 多网卡误注册虚拟网卡 IP 导致网关 lb:// 路由失败
+        ip: 127.0.0.1
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/smart_home_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true

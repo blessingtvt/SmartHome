@@ -23,6 +23,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- 阶段6：服务注册发现（Nacos）。版本由父工程 spring-cloud-alibaba-dependencies 统一管理 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
         <!-- MyBatis-Plus（传递引入 spring-jdbc / HikariCP，JdbcTemplate 仍可用） -->
         <dependency>
             <groupId>com.baomidou</groupId>

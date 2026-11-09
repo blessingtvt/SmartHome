@@ -1,7 +1,36 @@
-# G0 网关服务（阶段6启用）。当前占位，无实际配置生效。
 server:
   port: 8080
 
 spring:
   application:
     name: gateway-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        # 网关自身无需被调用，仅作为发现客户端解析 lb:// 服务名；关闭注册后 Nacos 服务列表只展示 S1~S4
+        register-enabled: false
+    gateway:
+      routes:
+        # S1 环境感知服务：环境数据 + 家庭 + 房间
+        - id: environment-service
+          uri: lb://environment-service
+          predicates:
+            - Path=/api/v1/environment/**,/api/v1/families/**,/api/v1/rooms/**
+        # S2 规则服务
+        - id: rule-service
+          uri: lb://rule-service
+          predicates:
+            - Path=/api/v1/rules/**
+        # S3 设备服务
+        - id: device-service
+          uri: lb://device-service
+          predicates:
+            - Path=/api/v1/devices/**,/api/v1/device-commands/**
+        # S4 告警服务
+        - id: alarm-service
+          uri: lb://alarm-service
+          predicates:
+            - Path=/api/v1/alarms/**
+
+# 说明：/internal/** 为服务间内部接口，不对外暴露，故网关不配置相关路由。
