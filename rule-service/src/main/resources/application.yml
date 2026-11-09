@@ -4,3 +4,32 @@ server:
 spring:
   application:
     name: rule-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/smart_home_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: smart_home
+    # 优先读环境变量 DB_PASSWORD，未设置时回退到与 S1/S3/S4 一致的本地开发默认值
+    password: ${DB_PASSWORD:123456}
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 开发期打印 SQL，便于观察入库情况
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+# 业务相关自定义配置（S2-04：服务间调用）
+smart-home:
+  device-service:
+    # S3 设备指令服务地址
+    url: http://127.0.0.1:8083
+  alarm-service:
+    # S4 告警服务地址
+    url: http://127.0.0.1:8084
+  action:
+    # 连接/读取超时（毫秒）
+    connect-timeout-ms: 500
+    read-timeout-ms: 500

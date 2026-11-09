@@ -105,6 +105,9 @@ CREATE TABLE `rule_execution_log` (
     `trigger_value`    VARCHAR(100)          DEFAULT NULL   COMMENT '触发时数据值',
     `execution_result` VARCHAR(50)  NOT NULL                COMMENT '判断或执行结果',
     `execution_time`   DATETIME     NOT NULL                COMMENT '执行时间',
+    `evaluation_result` VARCHAR(20)          DEFAULT NULL   COMMENT '规则评估结果：MATCHED/NOT_MATCHED/ERROR',
+    `device_command_id` BIGINT                DEFAULT NULL   COMMENT '关联的设备指令ID',
+    `failure_reason`    VARCHAR(255)          DEFAULT NULL   COMMENT '规则评估或动作提交失败原因',
     PRIMARY KEY (`id`),
     KEY `idx_rule_log_rule_id` (`rule_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '规则执行记录表';
@@ -117,7 +120,7 @@ CREATE TABLE `device_command` (
     `command_code`   VARCHAR(50)  NOT NULL                COMMENT '指令编码（唯一）',
     `device_code`    VARCHAR(50)  NOT NULL                COMMENT '目标设备编码',
     `action`         VARCHAR(50)  NOT NULL                COMMENT '控制动作(TURN_ON/TURN_OFF/SET_LEVEL)',
-    `source`         VARCHAR(20)  NOT NULL                COMMENT '控制来源(RULE/REMOTE)',
+    `source`         VARCHAR(20)  NOT NULL                COMMENT '控制来源(AUTO_RULE/REMOTE)',
     `status`         VARCHAR(20)  NOT NULL DEFAULT 'PENDING' COMMENT '指令状态(PENDING/SUCCESS/FAILED)',
     `result_message` VARCHAR(255)          DEFAULT NULL   COMMENT '执行结果说明',
     `create_time`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
