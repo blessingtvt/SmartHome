@@ -1,5 +1,6 @@
 package com.smarthome.alarm.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.smarthome.alarm.dto.AlarmCreateRequest;
 import com.smarthome.alarm.dto.AlarmHandleRequest;
 import com.smarthome.alarm.dto.AlarmHelpRequest;
@@ -34,4 +35,16 @@ public interface AlarmService {
      * @return 更新后的告警
      */
     AlarmVO updateStatus(Long alarmId, AlarmHandleRequest request);
+
+    /**
+     * API09：分页查询告警（按 alarm_time 倒序）。
+     *
+     * @param alarmType  告警类型（可空）
+     * @param status     处理状态（可空）
+     * @param deviceCode 设备编码（可空）
+     * @param pageNum    页码（从 1 开始）
+     * @param pageSize   每页条数
+     * @return 分页结果
+     */
+    IPage<AlarmVO> page(String alarmType, String status, String deviceCode, long pageNum, long pageSize);
 }

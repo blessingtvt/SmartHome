@@ -1,6 +1,9 @@
 package com.smarthome.alarm.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.smarthome.alarm.dto.AlarmCreateRequest;
 import com.smarthome.alarm.dto.AlarmHandleRequest;
 import com.smarthome.alarm.dto.AlarmHelpRequest;
@@ -97,6 +100,32 @@ public class AlarmServiceImpl implements AlarmService {
         return toVO(alarmMapper.selectById(alarmId));
     }
 
+    @Override
+    public IPage<AlarmVO> page(String alarmType, String status, String deviceCode, long pageNum, long pageSize) {
+        if (alarmType != null && !alarmType.isBlank()) {
+            requireValidAlarmType(alarmType);
+        }
+        if (status != null && !status.isBlank()) {
+            requireValidStatus(status);
+        }
+
+        QueryWrapper<Alarm> wrapper = new QueryWrapper<>();
+        if (alarmType != null && !alarmType.isBlank()) {
+            wrapper.eq("alarm_type", alarmType);
+        }
+        if (status != null && !status.isBlank()) {
+            wrapper.eq("status", status);
+        }
+        if (deviceCode != null && !deviceCode.isBlank()) {
+            wrapper.eq("device_code", deviceCode);
+        }
+        wrapper.orderByDesc("alarm_time");
+
+        Page<Alarm> pageParam = new Page<>(pageNum, pageSize);
+        IPage<Alarm> result = alarmMapper.selectPage(pageParam, wrapper);
+        return result.convert(AlarmServiceImpl::toVO);
+    }
+
     /** 校验合法状态流转：PENDING->PROCESSING、PROCESSING->PROCESSED、PENDING->PROCESSED */
     private void requireValidTransition(String current, String target) {
         boolean valid;
@@ -109,6 +138,25 @@ public class AlarmServiceImpl implements AlarmService {
         if (!valid) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
                     "非法状态跳转: " + current + " -> " + target);
+        }
+    }
+
+    /** 校验告警类型筛选值合法 */
+    private void requireValidAlarmType(String alarmType) {
+        if (!CommonConstant.ALARM_ENV_ABNORMAL.equals(alarmType)
+                && !CommonConstant.ALARM_MANUAL_HELP.equals(alarmType)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                    "告警类型仅支持 ENV_ABNORMAL/MANUAL_HELP");
+        }
+    }
+
+    /** 校验告警状态筛选值合法 */
+    private void requireValidStatus(String status) {
+        if (!CommonConstant.ALARM_STATUS_PENDING.equals(status)
+                && !CommonConstant.ALARM_STATUS_PROCESSING.equals(status)
+                && !CommonConstant.ALARM_STATUS_PROCESSED.equals(status)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                    "告警状态仅支持 PENDING/PROCESSING/PROCESSED");
         }
     }
 
