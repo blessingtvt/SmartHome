@@ -59,7 +59,8 @@ CREATE TABLE `device` (
     `room_id`       BIGINT                DEFAULT NULL   COMMENT '所属房间编号（逻辑引用 S1.room）',
     `online_status` VARCHAR(20)  NOT NULL DEFAULT 'OFFLINE' COMMENT '在线状态',
     `device_status` VARCHAR(20)  NOT NULL DEFAULT 'OFF'     COMMENT '运行状态',
-    `create_time`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `create_time`           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `last_heartbeat_time`   DATETIME              DEFAULT NULL   COMMENT '最后心跳/活动时间（ESP32 网络连接状态判定）',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_device_code` (`device_code`),
     KEY `idx_device_room_id` (`room_id`)
