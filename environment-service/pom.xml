@@ -23,10 +23,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- 阶段1用于验证 MySQL 连接；阶段2接入 MyBatis-Plus 后保留 -->
+        <!-- MyBatis-Plus（传递引入 spring-jdbc / HikariCP，JdbcTemplate 仍可用） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <!-- 参数校验 @Valid / @NotBlank 等 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>

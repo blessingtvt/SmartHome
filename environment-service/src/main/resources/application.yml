@@ -4,9 +4,24 @@ server:
 spring:
   application:
     name: environment-service
-  # 数据库连接（阶段1用于验证连接，阶段2接入 MyBatis-Plus 后继续使用）
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/smart_home_db?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: smart_home
     password: 123456
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 开发期打印 SQL，便于观察入库情况
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+# 业务相关自定义配置
+smart-home:
+  rule-service:
+    # S2 规则服务地址。阶段2 S2 未部署，调用失败会被容错降级，不影响数据保存；阶段5 正式接入。
+    url: http://127.0.0.1:8082
