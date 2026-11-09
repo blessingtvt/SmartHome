@@ -54,4 +54,9 @@ public class DeviceController {
         deviceService.delete(id);
         return Result.success();
     }
+
+    @PostMapping("/{deviceCode}/heartbeat")
+    public Result<DeviceVO> heartbeat(@PathVariable("deviceCode") String deviceCode) {
+        return Result.success("心跳成功", deviceService.heartbeat(deviceCode));
+    }
 }

@@ -23,6 +23,7 @@ import java.util.List;
 public class DeviceService {
 
     private static final String ONLINE_STATUS_OFFLINE = "OFFLINE";
+    private static final String ONLINE_STATUS_ONLINE = "ONLINE";
     private static final String DEVICE_STATUS_OFF = "OFF";
 
     private final DeviceMapper deviceMapper;
@@ -57,6 +58,18 @@ public class DeviceService {
 
     public DeviceVO getById(Long id) {
         return toVO(requireEntity(id));
+    }
+
+    /** 心跳上报：更新最后心跳时间并置为在线（ESP32 网络连接状态判定） */
+    public DeviceVO heartbeat(String deviceCode) {
+        Device entity = deviceMapper.selectOne(new QueryWrapper<Device>().eq("device_code", deviceCode));
+        if (entity == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND.getCode(), "设备不存在: " + deviceCode);
+        }
+        entity.setOnlineStatus(ONLINE_STATUS_ONLINE);
+        entity.setLastHeartbeatTime(TimeUtils.now());
+        deviceMapper.updateById(entity);
+        return toVO(entity);
     }
 
     /** 修改设备：不存在则 404；修改 deviceCode 时校验新编码不与其他设备冲突 */

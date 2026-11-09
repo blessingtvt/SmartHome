@@ -19,3 +19,11 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+
+# 设备在线判定配置（S3）
+smart-home:
+  device:
+    # 超过该秒数未收到心跳/数据则判为 OFFLINE
+    offline-threshold-seconds: 90
+    # 离线扫描任务间隔（毫秒）
+    offline-scan-interval-ms: 30000
