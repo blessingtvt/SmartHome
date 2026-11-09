@@ -1,0 +1,7 @@
+# G0 网关服务（阶段6启用）。当前占位，无实际配置生效。
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service

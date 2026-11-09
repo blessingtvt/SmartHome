@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.smarthome</groupId>
+        <artifactId>smart-home</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gateway-service</artifactId>
+    <name>gateway-service</name>
+    <description>G0 网关服务（阶段6接入 Spring Cloud Gateway + Nacos，当前仅占位）</description>
+
+    <!-- 阶段6 再引入：
+         - org.springframework.cloud:spring-cloud-starter-gateway
+         - com.alibaba.cloud:spring-cloud-starter-alibaba-nacos-discovery
+         注意：Gateway 基于 WebFlux，不要引入 spring-boot-starter-web（会冲突）。 -->
+    <dependencies>
+        <!-- 占位阶段暂无依赖 -->
+    </dependencies>
+</project>

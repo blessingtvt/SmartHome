@@ -1,0 +1,24 @@
+# ---- Maven ----
+target/
+*.class
+
+# ---- IDEA ----
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ---- 其他 IDE ----
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# ---- 日志 ----
+*.log
+logs/
+
+# ---- 系统文件 ----
+.DS_Store
+Thumbs.db
