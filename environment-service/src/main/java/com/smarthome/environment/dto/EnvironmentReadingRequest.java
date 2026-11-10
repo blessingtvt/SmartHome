@@ -32,6 +32,10 @@ public class EnvironmentReadingRequest {
     @Min(value = 0, message = "MQ-2 原始读数不能为负")
     private Integer gasRaw;
 
+    /** 水滴感应原始值(0-4095,ADC)，非负 */
+    @Min(value = 0, message = "水滴感应原始值不能为负")
+    private Integer water;
+
     /** PIR 是否触发 */
     private Boolean pirTriggered;
 
@@ -69,6 +73,14 @@ public class EnvironmentReadingRequest {
 
     public void setGasRaw(Integer gasRaw) {
         this.gasRaw = gasRaw;
+    }
+
+    public Integer getWater() {
+        return water;
+    }
+
+    public void setWater(Integer water) {
+        this.water = water;
     }
 
     public Boolean getPirTriggered() {

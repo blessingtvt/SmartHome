@@ -15,9 +15,11 @@ import com.smarthome.rule.dto.RuleEnabledRequest;
 import com.smarthome.rule.dto.RuleUpdateRequest;
 import com.smarthome.rule.entity.AutomationRule;
 import com.smarthome.rule.mapper.AutomationRuleMapper;
+import com.smarthome.rule.mapper.RuleExecutionLogMapper;
 import com.smarthome.rule.service.RuleConfigValidator;
 import com.smarthome.rule.service.RuleService;
 import com.smarthome.rule.vo.AutomationRuleVO;
+import com.smarthome.rule.vo.RuleExecutionLogVO;
 import org.springframework.stereotype.Service;
 
 /**
@@ -33,10 +35,14 @@ public class RuleServiceImpl implements RuleService {
 
     private final AutomationRuleMapper ruleMapper;
     private final RuleConfigValidator ruleConfigValidator;
+    private final RuleExecutionLogMapper logMapper;
 
-    public RuleServiceImpl(AutomationRuleMapper ruleMapper, RuleConfigValidator ruleConfigValidator) {
+    public RuleServiceImpl(AutomationRuleMapper ruleMapper,
+                           RuleConfigValidator ruleConfigValidator,
+                           RuleExecutionLogMapper logMapper) {
         this.ruleMapper = ruleMapper;
         this.ruleConfigValidator = ruleConfigValidator;
+        this.logMapper = logMapper;
     }
 
     @Override
@@ -117,6 +123,12 @@ public class RuleServiceImpl implements RuleService {
                 .eq("id", id);
         ruleMapper.update(null, update);
         return toVO(ruleMapper.selectById(id));
+    }
+
+    @Override
+    public IPage<RuleExecutionLogVO> pageLogs(Long ruleId, long pageNum, long pageSize) {
+        Page<RuleExecutionLogVO> pageParam = new Page<>(pageNum, pageSize);
+        return logMapper.selectLogPage(pageParam, ruleId);
     }
 
     private AutomationRule requireEntity(Long id) {

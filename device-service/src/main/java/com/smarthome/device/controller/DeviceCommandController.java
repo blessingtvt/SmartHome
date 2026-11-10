@@ -34,6 +34,14 @@ public class DeviceCommandController {
         return Result.success(deviceCommandService.listPending(deviceCode));
     }
 
+    /** API（新增）：查询设备指令历史（按 create_time 倒序，最多 size 条） */
+    @GetMapping
+    public Result<List<DeviceCommandVO>> history(
+            @RequestParam("deviceCode") String deviceCode,
+            @RequestParam(value = "size", defaultValue = "50") int size) {
+        return Result.success(deviceCommandService.listHistory(deviceCode, size));
+    }
+
     /** API03：上报指令执行结果 */
     @PostMapping("/{commandId}/result")
     public Result<DeviceCommandVO> reportResult(@PathVariable("commandId") Long commandId,

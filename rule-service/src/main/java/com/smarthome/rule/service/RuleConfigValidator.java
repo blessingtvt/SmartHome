@@ -17,9 +17,9 @@ import java.util.Set;
 @Component
 public class RuleConfigValidator {
 
-    /** 第一版支持的触发类型 */
+    /** 支持的触发类型 */
     private static final Set<String> VALID_TRIGGER_TYPES =
-            Set.of("TEMPERATURE", "HUMIDITY", "GAS_RAW", "PIR");
+            Set.of("TEMPERATURE", "HUMIDITY", "GAS_RAW", "PIR", "WATER");
 
     /** 数值型指标支持的比较运算符 */
     private static final Set<String> NUMERIC_OPERATORS = Set.of(">", "<", ">=", "<=", "==");
@@ -34,14 +34,17 @@ public class RuleConfigValidator {
     public void validateTriggerType(String triggerType) {
         if (triggerType == null || !VALID_TRIGGER_TYPES.contains(triggerType)) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
-                    "triggerType 非法，仅支持 TEMPERATURE/HUMIDITY/GAS_RAW/PIR");
+                    "triggerType 非法，仅支持 TEMPERATURE/HUMIDITY/GAS_RAW/PIR/WATER");
         }
     }
 
     /** 校验 conditionConfig 与 triggerType 匹配且结构、取值合法 */
     public void validateConditionConfig(String triggerType, JsonNode config) {
         requireObject(config, "conditionConfig");
-        rejectUnknownFields(config, Set.of("metric", "operator", "threshold"), "conditionConfig");
+        Set<String> allowed = "WATER".equals(triggerType)
+                ? Set.of("metric", "operator", "threshold", "confirmCount")
+                : Set.of("metric", "operator", "threshold");
+        rejectUnknownFields(config, allowed, "conditionConfig");
 
         String metric = requireText(config, "metric", "conditionConfig").asText();
         String operator = requireText(config, "operator", "conditionConfig").asText();
@@ -56,6 +59,9 @@ public class RuleConfigValidator {
 
         validateOperator(metric, operator);
         validateThreshold(metric, threshold);
+        if ("WATER".equals(triggerType)) {
+            validateConfirmCount(config);
+        }
     }
 
     /** 校验 actionConfig 结构、actionType、必需字段与取值范围 */
@@ -96,6 +102,8 @@ public class RuleConfigValidator {
                 return "gasRaw";
             case "PIR":
                 return "pirTriggered";
+            case "WATER":
+                return "water";
             default:
                 throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
                         "triggerType 非法: " + triggerType);
@@ -146,8 +154,26 @@ public class RuleConfigValidator {
                             "pirTriggered threshold 必须是 Boolean");
                 }
                 break;
+            case "water":
+                if (!threshold.isIntegralNumber() || !threshold.canConvertToLong() || threshold.asLong() < 0) {
+                    throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                            "water threshold 必须是非负整数");
+                }
+                break;
             default:
                 throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "metric 非法: " + metric);
+        }
+    }
+
+    /** WATER 去抖：confirmCount 连续确认次数（缺省由评估侧兜底默认值） */
+    private void validateConfirmCount(JsonNode config) {
+        JsonNode cc = config.get("confirmCount");
+        if (cc == null || cc.isNull()) {
+            return;
+        }
+        if (!cc.isIntegralNumber() || !cc.canConvertToInt() || cc.asInt() < 1) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                    "water confirmCount 必须是正整数（连续确认次数，至少 1）");
         }
     }
 

@@ -16,6 +16,7 @@
 SET NAMES utf8mb4;
 
 -- 按依赖顺序先删后建（先删引用方，再删被引用方）
+DROP TABLE IF EXISTS `auto_light_state`;
 DROP TABLE IF EXISTS `alarm`;
 DROP TABLE IF EXISTS `device_command`;
 DROP TABLE IF EXISTS `rule_execution_log`;
@@ -75,6 +76,7 @@ CREATE TABLE `environment_data` (
     `temperature`  DECIMAL(5, 2)          DEFAULT NULL   COMMENT '温度(℃)',
     `humidity`     DECIMAL(5, 2)          DEFAULT NULL   COMMENT '湿度(%)',
     `gas_raw`      INT                     DEFAULT NULL   COMMENT 'MQ-2 原始读数',
+    `water`        INT                     DEFAULT NULL   COMMENT '水滴感应原始值(0-4095,ADC)',
     `pir_triggered` TINYINT(1)            DEFAULT NULL   COMMENT 'PIR 是否触发(0/1)',
     `collect_time` DATETIME      NOT NULL                COMMENT '采集时间',
     PRIMARY KEY (`id`),
@@ -108,6 +110,7 @@ CREATE TABLE `rule_execution_log` (
     `evaluation_result` VARCHAR(20)          DEFAULT NULL   COMMENT '规则评估结果：MATCHED/NOT_MATCHED/ERROR',
     `device_command_id` BIGINT                DEFAULT NULL   COMMENT '关联的设备指令ID',
     `failure_reason`    VARCHAR(255)          DEFAULT NULL   COMMENT '规则评估或动作提交失败原因',
+    `device_exec_result` VARCHAR(20)          DEFAULT NULL   COMMENT '设备实际执行结果(SUCCESS/FAILED，PENDING不回填)',
     PRIMARY KEY (`id`),
     KEY `idx_rule_log_rule_id` (`rule_id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '规则执行记录表';
@@ -147,3 +150,16 @@ CREATE TABLE `alarm` (
     KEY `idx_alarm_time` (`alarm_time`),
     KEY `idx_alarm_status` (`status`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '告警记录表';
+
+-- ---------------------------------------------------------------------
+-- auto_light_state 自动照明状态表（归属 S2）
+-- 阶段四 pir_light：持久化每个照明设备的最近一次 PIR 活动时间，供定时关灯判断。
+-- ---------------------------------------------------------------------
+CREATE TABLE `auto_light_state` (
+    `id`                 BIGINT       NOT NULL AUTO_INCREMENT COMMENT '记录编号',
+    `device_code`        VARCHAR(50)  NOT NULL                COMMENT '照明设备编码',
+    `last_activity_time` DATETIME              DEFAULT NULL   COMMENT '最近一次 PIR 活动时间',
+    `update_time`        DATETIME     NOT NULL                COMMENT '最后更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_auto_light_device` (`device_code`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT = '自动照明状态表(归属 S2)';

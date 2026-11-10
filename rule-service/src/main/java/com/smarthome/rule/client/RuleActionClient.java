@@ -30,6 +30,9 @@ public class RuleActionClient {
     private static final String SOURCE_AUTO_RULE = "AUTO_RULE";
     private static final int SUCCESS_CODE = 200;
 
+    /** S3 手动控制保护拦截的业务码（与 device-service 的 MANUAL_PROTECTED_CODE 保持一致） */
+    private static final int MANUAL_PROTECTED_CODE = 409;
+
     private final ObjectMapper json = new ObjectMapper();
     private final RestClient restClient;
     private final String deviceServiceUrl;
@@ -50,6 +53,7 @@ public class RuleActionClient {
 
     /**
      * 调用 S3 创建设备指令，成功返回指令 ID（供回填 device_command_id）。
+     * 若被 S3 手动控制保护拦截（409），抛 {@link ManualProtectedException}，由调用方记 BLOCKED。
      */
     public Long createCommand(String deviceCode, String action) {
         JsonNode body = json.createObjectNode()
@@ -57,11 +61,58 @@ public class RuleActionClient {
                 .put("action", action)
                 .put("source", SOURCE_AUTO_RULE);
         JsonNode resp = post(deviceServiceUrl + "/internal/device-commands", body, "S3");
+        int code = resp.path("code").asInt(-1);
+        if (code == MANUAL_PROTECTED_CODE) {
+            throw new ManualProtectedException(resp.path("message").asText("手动控制保护期内，自动指令已拦截"));
+        }
+        if (code != SUCCESS_CODE) {
+            String message = resp.path("message").asText("无错误信息");
+            throw new ActionCallException("S3 业务失败: " + message);
+        }
         JsonNode idNode = resp.path("data").path("id");
         if (idNode.isMissingNode() || idNode.isNull() || !idNode.canConvertToLong()) {
             throw new ActionCallException("S3 响应缺少指令ID");
         }
         return idNode.asLong();
+    }
+
+    /**
+     * 调用 S3 查询设备当前执行状态（INT03），供 PIR 开灯去重与自动关灯判断。
+     * 解析 data 中的 on / onSource / pending 字段，返回本地 {@link DeviceStateResult}。
+     */
+    public DeviceStateResult getDeviceState(String deviceCode) {
+        JsonNode resp = get(deviceServiceUrl + "/internal/devices/" + deviceCode + "/state", "S3");
+        int code = resp.path("code").asInt(-1);
+        if (code != SUCCESS_CODE) {
+            String message = resp.path("message").asText("无错误信息");
+            throw new ActionCallException("S3 设备状态查询失败: " + message);
+        }
+        JsonNode data = resp.path("data");
+        DeviceStateResult result = new DeviceStateResult();
+        if (!data.isMissingNode() && data.isObject()) {
+            result.setOn(data.path("on").isNull() ? null : data.path("on").asBoolean());
+            result.setOnSource(data.path("onSource").isNull() ? null : data.path("onSource").asText());
+            result.setPending(data.path("pending").isNull() ? null : data.path("pending").asBoolean());
+        }
+        return result;
+    }
+
+    /**
+     * 调用 S3 查询单条指令详情（INT04），返回指令状态（PENDING/SUCCESS/FAILED），
+     * 供 S2 回填 device_exec_result。指令不存在或业务失败抛 {@link ActionCallException}。
+     */
+    public String getCommandStatus(Long commandId) {
+        JsonNode resp = get(deviceServiceUrl + "/internal/device-commands/" + commandId, "S3");
+        int code = resp.path("code").asInt(-1);
+        if (code != SUCCESS_CODE) {
+            String message = resp.path("message").asText("无错误信息");
+            throw new ActionCallException("S3 指令查询失败: " + message);
+        }
+        JsonNode status = resp.path("data").path("status");
+        if (status.isMissingNode() || status.isNull()) {
+            throw new ActionCallException("S3 指令响应缺少状态");
+        }
+        return status.asText();
     }
 
     /**
@@ -71,10 +122,39 @@ public class RuleActionClient {
         JsonNode body = json.createObjectNode()
                 .put("deviceCode", deviceCode)
                 .put("content", content);
-        post(alarmServiceUrl + "/internal/alarms", body, "S4");
+        JsonNode resp = post(alarmServiceUrl + "/internal/alarms", body, "S4");
+        int code = resp.path("code").asInt(-1);
+        if (code != SUCCESS_CODE) {
+            String message = resp.path("message").asText("无错误信息");
+            throw new ActionCallException("S4 业务失败: " + message);
+        }
     }
 
-    /** 发起 POST，校验 HTTP 与业务 code，返回响应 JSON；失败抛 ActionCallException */
+    /** 发起 GET，校验 HTTP 层（网络/超时/空响应/非 JSON），返回响应 JSON（业务 code 由调用方判断） */
+    private JsonNode get(String url, String target) {
+        String respBody;
+        try {
+            respBody = restClient.get().uri(url).retrieve().body(String.class);
+        } catch (ResourceAccessException e) {
+            String message = classify(e, target);
+            log.warn(message, e);
+            throw new ActionCallException(message, e);
+        } catch (RestClientException e) {
+            String message = classify(e, target);
+            log.warn(message, e);
+            throw new ActionCallException(message, e);
+        }
+        if (respBody == null || respBody.isBlank()) {
+            throw new ActionCallException(target + " 响应为空");
+        }
+        try {
+            return json.readTree(respBody);
+        } catch (Exception e) {
+            throw new ActionCallException(target + " 响应不是合法 JSON", e);
+        }
+    }
+
+    /** 发起 POST，校验 HTTP 层（网络/超时/空响应/非 JSON），返回响应 JSON（业务 code 由调用方判断） */
     private JsonNode post(String url, JsonNode body, String target) {
         String respBody;
         try {
@@ -98,15 +178,6 @@ public class RuleActionClient {
             resp = json.readTree(respBody);
         } catch (Exception e) {
             throw new ActionCallException(target + " 响应不是合法 JSON", e);
-        }
-
-        JsonNode codeNode = resp.get("code");
-        if (codeNode == null || !codeNode.canConvertToInt()) {
-            throw new ActionCallException(target + " 响应格式异常（缺少 code）");
-        }
-        if (codeNode.asInt() != SUCCESS_CODE) {
-            String message = resp.path("message").asText("无错误信息");
-            throw new ActionCallException(target + " 业务失败: " + message);
         }
         return resp;
     }

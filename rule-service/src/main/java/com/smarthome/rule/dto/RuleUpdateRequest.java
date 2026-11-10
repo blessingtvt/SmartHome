@@ -17,7 +17,7 @@ public class RuleUpdateRequest {
     @Size(max = 100, message = "规则名称长度不能超过100")
     private String ruleName;
 
-    /** 触发类型（TEMPERATURE/HUMIDITY/GAS_RAW/PIR） */
+    /** 触发类型（TEMPERATURE/HUMIDITY/GAS_RAW/PIR/WATER） */
     @NotBlank(message = "触发类型不能为空")
     private String triggerType;
 

@@ -5,6 +5,7 @@ import com.smarthome.rule.dto.RuleCreateRequest;
 import com.smarthome.rule.dto.RuleEnabledRequest;
 import com.smarthome.rule.dto.RuleUpdateRequest;
 import com.smarthome.rule.vo.AutomationRuleVO;
+import com.smarthome.rule.vo.RuleExecutionLogVO;
 
 /**
  * 自动化规则管理接口（S2-02）。
@@ -44,4 +45,11 @@ public interface RuleService {
      * 启用/禁用规则（仅修改 enabled）。
      */
     AutomationRuleVO updateEnabled(Long id, RuleEnabledRequest request);
+
+    /**
+     * 分页查询规则执行日志（只读，阶段五前端执行日志展示）。
+     *
+     * @param ruleId 规则编号（可空，为空则查询全部规则日志）
+     */
+    IPage<RuleExecutionLogVO> pageLogs(Long ruleId, long pageNum, long pageSize);
 }

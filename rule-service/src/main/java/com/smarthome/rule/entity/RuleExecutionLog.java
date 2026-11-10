@@ -35,6 +35,9 @@ public class RuleExecutionLog {
     /** 规则评估或动作提交失败原因 */
     private String failureReason;
 
+    /** 设备实际执行结果（SUCCESS/FAILED，PENDING 不回填，由 S2 定时轮询 S3 后回填） */
+    private String deviceExecResult;
+
     /** 执行时间 */
     private LocalDateTime executionTime;
 
@@ -92,6 +95,14 @@ public class RuleExecutionLog {
 
     public void setFailureReason(String failureReason) {
         this.failureReason = failureReason;
+    }
+
+    public String getDeviceExecResult() {
+        return deviceExecResult;
+    }
+
+    public void setDeviceExecResult(String deviceExecResult) {
+        this.deviceExecResult = deviceExecResult;
     }
 
     public LocalDateTime getExecutionTime() {

@@ -38,6 +38,7 @@ public class EnvironmentDataService {
         entity.setTemperature(request.getTemperature());
         entity.setHumidity(request.getHumidity());
         entity.setGasRaw(request.getGasRaw());
+        entity.setWater(request.getWater());
         entity.setPirTriggered(request.getPirTriggered());
         LocalDateTime collectTime = request.getTimestamp() == null
                 ? TimeUtils.now()
@@ -98,6 +99,7 @@ public class EnvironmentDataService {
         vo.setTemperature(entity.getTemperature());
         vo.setHumidity(entity.getHumidity());
         vo.setGasRaw(entity.getGasRaw());
+        vo.setWater(entity.getWater());
         vo.setPirTriggered(entity.getPirTriggered());
         vo.setTimestamp(TimeUtils.toEpochMillis(entity.getCollectTime()));
         return vo;

@@ -29,6 +29,9 @@ public class EnvironmentData {
     /** MQ-2 原始读数 */
     private Integer gasRaw;
 
+    /** 水滴感应原始值(0-4095,ADC) */
+    private Integer water;
+
     /** PIR 是否触发(0/1) */
     private Boolean pirTriggered;
 
@@ -73,6 +76,14 @@ public class EnvironmentData {
 
     public void setGasRaw(Integer gasRaw) {
         this.gasRaw = gasRaw;
+    }
+
+    public Integer getWater() {
+        return water;
+    }
+
+    public void setWater(Integer water) {
+        this.water = water;
     }
 
     public Boolean getPirTriggered() {

@@ -39,3 +39,12 @@ smart-home:
     # 连接/读取超时（毫秒）
     connect-timeout-ms: 500
     read-timeout-ms: 500
+  auto-light:
+    # 无活动自动关灯延时（秒）
+    off-delay-seconds: 60
+    # 自动关灯扫描间隔（毫秒）
+    off-scan-interval-ms: 10000
+    # 设备执行结果回填间隔（毫秒）
+    result-refresh-interval-ms: 10000
+    # 每轮回填的最大日志行数
+    result-refresh-batch-size: 100

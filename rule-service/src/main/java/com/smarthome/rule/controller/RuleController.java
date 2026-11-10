@@ -7,6 +7,7 @@ import com.smarthome.rule.dto.RuleUpdateRequest;
 import com.smarthome.rule.service.RuleService;
 import com.smarthome.rule.vo.AutomationRuleVO;
 import com.smarthome.rule.vo.PageVO;
+import com.smarthome.rule.vo.RuleExecutionLogVO;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +54,15 @@ public class RuleController {
     @GetMapping("/{id}")
     public Result<AutomationRuleVO> getById(@PathVariable("id") Long id) {
         return Result.success(ruleService.getById(id));
+    }
+
+    /** 执行日志（只读分页，阶段五）。ruleId 可空，为空查询全部规则日志。 */
+    @GetMapping("/execution-logs")
+    public Result<PageVO<RuleExecutionLogVO>> logs(
+            @RequestParam(value = "ruleId", required = false) Long ruleId,
+            @RequestParam(value = "pageNum", defaultValue = "1") long pageNum,
+            @RequestParam(value = "pageSize", defaultValue = "20") long pageSize) {
+        return Result.success(PageVO.of(ruleService.pageLogs(ruleId, pageNum, pageSize)));
     }
 
     /** 修改规则 */

@@ -17,6 +17,8 @@ public class EnvironmentDataVO {
 
     private Integer gasRaw;
 
+    private Integer water;
+
     private Boolean pirTriggered;
 
     /** 采集时间（epoch 毫秒） */
@@ -60,6 +62,14 @@ public class EnvironmentDataVO {
 
     public void setGasRaw(Integer gasRaw) {
         this.gasRaw = gasRaw;
+    }
+
+    public Integer getWater() {
+        return water;
+    }
+
+    public void setWater(Integer water) {
+        this.water = water;
     }
 
     public Boolean getPirTriggered() {
